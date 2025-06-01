@@ -1,0 +1,67 @@
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  font-family: "Press Start 2P", cursive;
+  background-color: #dcd4b5;
+}
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #a29e8e;
+    height: 80px;
+}
+.header-items {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 16px;
+    box-sizing: border-box;
+    max-width: 1920px;
+    width: 100%;
+}
+.autocomplete-wrapper {
+  position: relative;
+  display: flex;
+  max-width: 216px;
+}
+.retro-input {
+    font-family: "Press Start 2P", cursive;
+  background-color: #c6c6a7;
+  border: 3px solid #444;
+  color: #111;
+  padding: 0.75rem;
+  width: 100%;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  outline: none;
+  box-shadow: inset -2px -2px 0 #888, inset 2px 2px 0 #fff;
+  box-sizing: border-box;
+}
+#search-input {
+  position: relative;
+  z-index: 2;
+  background-color: transparent; /* damit Ghost durchscheint */
+}
+#autocomplete-ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  color: gray;
+  pointer-events: none;
+  z-index: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: border-box;
+  height: 100%;
+  width: 100%;
+  padding: 0.75rem;
+  font-family: "Press Start 2P", cursive;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  border: 3px solid transparent; /* unsichtbar, gleiche Breite */
+  box-shadow: inset -2px -2px 0 transparent, inset 2px 2px 0 transparent;
+}

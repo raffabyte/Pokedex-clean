@@ -1,11 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Pokedex</title>
-</head>
-<body>
-    
-</body>
+    <link rel="icon" type="image/png" href="img/pokeball.png" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="template.js"></script>
+    <script src="script.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="header-items">
+        <h1>Pokedex</h1>
+        <div class="autocomplete-wrapper">
+          <input
+            id="search-input"
+            class="retro-input"
+            type="text"
+            placeholder="search"
+            autocomplete="off"
+          />
+          <div id="autocomplete-ghost" class="retro-input ghost-layer"></div>
+        </div>
+      </div>
+    </header>
+  </body>
 </html>
