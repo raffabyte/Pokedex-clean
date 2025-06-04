@@ -7,21 +7,21 @@ body {
   background-color: #dcd4b5;
 }
 header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    background-color: #a29e8e;
-    height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  background-color: #a29e8e;
+  height: 80px;
 }
 .header-items {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 16px;
-    box-sizing: border-box;
-    max-width: 1920px;
-    width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 16px;
+  box-sizing: border-box;
+  max-width: 1920px;
+  width: 100%;
 }
 .autocomplete-wrapper {
   position: relative;
@@ -29,7 +29,7 @@ header {
   max-width: 216px;
 }
 .retro-input {
-    font-family: "Press Start 2P", cursive;
+  font-family: "Press Start 2P", cursive;
   background-color: #c6c6a7;
   border: 3px solid #444;
   color: #111;
@@ -44,7 +44,7 @@ header {
 #search-input {
   position: relative;
   z-index: 2;
-  background-color: transparent; /* damit Ghost durchscheint */
+  background-color: transparent;
 }
 #autocomplete-ghost {
   position: absolute;
@@ -62,6 +62,24 @@ header {
   font-family: "Press Start 2P", cursive;
   font-size: 0.75rem;
   text-transform: uppercase;
-  border: 3px solid transparent; /* unsichtbar, gleiche Breite */
+  border: 3px solid transparent;
   box-shadow: inset -2px -2px 0 transparent, inset 2px 2px 0 transparent;
+}
+.content-container {
+  display: flex;
+  gap: 3rem;
+  padding: 1rem;
+  box-sizing: border-box;
+  width: 100%;
+}
+.cards-container {
+  display: block;
+  width: 100%;
+  max-width: calc(100% - 350px);
+}
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 3rem;
+  width: 100%;
 }
