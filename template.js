@@ -14,3 +14,37 @@ function getPokeCardsHTML(pokemonData) {
     </div>
   `;
 }
+
+function getDetailContainerHTML(pokemonData) {
+  const realImg = pokemonData.sprites.other["official-artwork"].front_default;
+  
+  const typesHTML = pokemonData.types
+    .map((t) => `<span class="type-badge ${t.type.name}">${t.type.name}</span>`)
+    .join(" ");
+
+  const statsHTML = pokemonData.stats
+    .map(
+      (s) => `
+      <div class="stat-row">
+        <span class="stat-label">${s.stat.name.toUpperCase()}</span>
+        <div class="stat-bar">
+          <div class="stat-fill" style="width: ${
+            Math.min(s.base_stat, 150) / 1.5
+          }%"></div>
+        </div>
+        <span class="stat-value">${s.base_stat}</span>
+      </div>
+    `
+    )
+    .join("");
+
+    return `
+    <h2>${pokemonData.name.toUpperCase()}</h2>
+    <img class="detail-img" src="${realImg}" width="200">
+    <div>${typesHTML}</div>
+    <hr>
+    <h3>Stats</h3>
+    ${statsHTML}
+    <hr>
+  `;
+}
