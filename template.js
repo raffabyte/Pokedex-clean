@@ -17,6 +17,7 @@ function getPokeCardsHTML(pokemonData) {
 
 function getDetailContainerHTML(pokemonData) {
   const realImg = pokemonData.sprites.other["official-artwork"].front_default;
+  const placeholder = "img/pokeball.png";
   
   const typesHTML = pokemonData.types
     .map((t) => `<span class="type-badge ${t.type.name}">${t.type.name}</span>`)
@@ -38,9 +39,9 @@ function getDetailContainerHTML(pokemonData) {
     )
     .join("");
 
-    return `
+  return `
     <h2>${pokemonData.name.toUpperCase()}</h2>
-    <img class="detail-img" src="${realImg}" width="200">
+    <img class="detail-img" src="${placeholder}" data-src="${realImg}" width="200">
     <div>${typesHTML}</div>
     <hr>
     <h3>Stats</h3>

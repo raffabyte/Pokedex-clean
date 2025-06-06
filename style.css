@@ -78,6 +78,11 @@ header {
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 3rem;
   width: 100%;
+}
+.d-flex-column {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
   max-width: calc(100% - 350px);
 }
 
@@ -144,4 +149,50 @@ header {
   text-align: right;
   font-size: 9px;
   flex-shrink: 0;
+}
+
+
+
+#load-more-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+#load-more-button {
+  padding: 1rem 2rem;
+  font-family: 'Press Start 2P', cursive;
+  font-size: 0.7rem;
+  border: 3px solid #444;
+  background-color: #c6c6a7;
+  color: #111;
+  box-shadow: 4px 4px 0 #888;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+#load-more-button:hover:not(:disabled) {
+  background-color: #a29e8e;
+}
+#load-more-button:disabled {
+  background-color: #999;
+  color: #666;
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.7;
+}
+.loader-inside {
+  margin-top: 2rem;
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Größerer Bereich für Zentrierung */
+}
+.loader-spinner {
+  width: 96px;  /* Größerer Pokéball */
+  height: 96px;
+  animation: spin 1s linear infinite;
+  image-rendering: pixelated;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }

@@ -31,12 +31,25 @@
       </div>
     </header>
     <div class="content-container">
-        <div id="cards-grid" class="cards-grid">
+      <div class="d-flex-column">
+        <div id="cards-grid" class="cards-grid"></div>
 
+        <div id="grid-loader" class="loader-inside" style="display: none">
+          <div class="loader-wrapper">
+            <img src="img/pokeball.png" class="loader-spinner" alt="Lädt..." />
+          </div>
         </div>
-        <div id="details-container" class="details-container">
-          <p class="placeholder-text">Wähle ein Pokémon</p>
+
+        <div id="load-more-wrapper">
+          <button id="load-more-button" onclick="loadMorePokemon()">
+            Mehr anzeigen
+          </button>
         </div>
+      </div>
+
+      <div id="details-container" class="details-container">
+        <p class="placeholder-text">Wähle ein Pokémon</p>
+      </div>
     </div>
   </body>
 </html>
