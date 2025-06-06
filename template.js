@@ -1,4 +1,6 @@
 function getPokeCardsHTML(pokemonData) {
+  const idFormatted = formatId(pokemonData.id);
+
   const typesHTML = pokemonData.types
     .map((t) => {
       const name = t.type.name;
@@ -9,6 +11,7 @@ function getPokeCardsHTML(pokemonData) {
   return `
     <div class="poke-card">
       <h3>${pokemonData.name.toUpperCase()}</h3>
+      <p class="poke-id">${idFormatted}</p>
       <img class="poke-img" src="${pokemonData.sprites.front_default}">
       <div class="types">${typesHTML}</div>
     </div>
@@ -18,6 +21,7 @@ function getPokeCardsHTML(pokemonData) {
 function getDetailContainerHTML(pokemonData) {
   const realImg = pokemonData.sprites.other["official-artwork"].front_default;
   const placeholder = "img/pokeball.png";
+  const idFormatted = formatId(pokemonData.id);
   
   const typesHTML = pokemonData.types
     .map((t) => `<span class="type-badge ${t.type.name}">${t.type.name}</span>`)
@@ -41,6 +45,7 @@ function getDetailContainerHTML(pokemonData) {
 
   return `
     <h2>${pokemonData.name.toUpperCase()}</h2>
+    <p class="poke-id">${idFormatted}</p>
     <img class="detail-img" src="${placeholder}" data-src="${realImg}" width="200">
     <div>${typesHTML}</div>
     <hr>

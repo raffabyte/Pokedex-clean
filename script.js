@@ -6,12 +6,12 @@ window.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   const loader = document.getElementById("grid-loader");
-  loader.style.display = "flex"; // ✅ Spinner zeigen
+  loader.style.display = "flex"; 
 
   await loadPokemon();
-  renderPokeCards(0);
+  renderPokeCards();
 
-  loader.style.display = "none"; // ✅ Spinner ausblenden
+  loader.style.display = "none"; 
 }
 
 
@@ -45,6 +45,10 @@ function renderPokeCards(startIndex = 0) {
 
     grid.appendChild(card);
   }
+}
+
+function formatId(id) {
+  return "#" + id.toString().padStart(4, "0");
 }
 
 async function loadMorePokemon() {
