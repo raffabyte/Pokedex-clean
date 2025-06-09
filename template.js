@@ -54,3 +54,37 @@ function getDetailContainerHTML(pokemonData) {
     <hr>
   `;
 }
+
+function getOverlayHTML(pokemonData) {
+  const imgSrc = pokemonData.sprites.other["official-artwork"].front_default;
+  const name = pokemonData.name.toUpperCase();
+  const id = formatId(pokemonData.id);
+  const height = (pokemonData.height / 10).toFixed(1); // in Metern
+  const weight = (pokemonData.weight / 10).toFixed(1); // in kg
+  const types = pokemonData.types
+  .map((t) => `<span class="type-badge ${t.type.name}">${t.type.name}</span>`)
+  .join(" ");
+  
+  const stats = pokemonData.stats
+    .map((stat) => {
+      return `
+      <div class="stat-row">
+        <div class="stat-label">${stat.stat.name}</div>
+        <div class="stat-bar">
+          <div class="stat-fill" style="width: ${stat.base_stat / 2}%"></div>
+        </div>
+        <div class="stat-value">${stat.base_stat}</div>
+      </div>
+    `;
+    })
+    .join("");
+
+    return `
+    <h2>${name} <span style="font-size: 0.6rem; color: #666;">${id}</span></h2>
+    <img src="${imgSrc}" alt="${name}">
+    <p>Typ: ${types}</p>
+    <p>Größe: ${height} m</p>
+    <p>Gewicht: ${weight} kg</p>
+    <div>${stats}</div>
+  `;
+}

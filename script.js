@@ -1,7 +1,7 @@
 let offset = 0;
 const limit = 30;
 let pokemonDetails = [];
-let renderPokemon = []
+let renderPokemon = [];
 let pokemonAllDetails = [];
 
 let searchInput;
@@ -23,6 +23,7 @@ async function init() {
 
   searchInput.addEventListener("keydown", handleAutocompleteKeydown);
   searchInput.addEventListener("input", runSearch);
+  // document.getElementById("details-container").addEventListener("click", showOverlay);
 
   loader.style.display = "none";
 }
@@ -40,9 +41,9 @@ async function runSearch() {
 
   ghostSuggestion(search);
   const foundLocally = searchPokemon(search);
-if (!foundLocally) {
-  searchExactPokemon(search);
-}
+  if (!foundLocally) {
+    searchExactPokemon(search);
+  }
 }
 
 function ghostSuggestion(search) {
@@ -90,12 +91,11 @@ async function searchExactPokemon(search) {
 
     const data = await res.json();
 
-    const alreadyExists = pokemonDetails.some(p => p.name === data.name);
+    const alreadyExists = pokemonDetails.some((p) => p.name === data.name);
     if (!alreadyExists) {
-
       pokemonAllDetails = [...pokemonDetails]
-    .filter((v, i, a) => a.findIndex(p => p.name === v.name) === i) 
-    .sort((a, b) => a.id - b.id);
+        .filter((v, i, a) => a.findIndex((p) => p.name === v.name) === i)
+        .sort((a, b) => a.id - b.id);
 
       pokemonAllDetails.push(data);
       pokemonAllDetails.sort((a, b) => a.id - b.id);
@@ -108,9 +108,7 @@ async function searchExactPokemon(search) {
   }
 }
 
-function chageArray() {
-
-}
+function chageArray() {}
 
 async function loadMorePokemon() {
   const loader = document.getElementById("grid-loader");
@@ -132,12 +130,12 @@ async function loadMorePokemon() {
       const res = await fetch(entry.url);
       const fullData = await res.json();
 
-      const alreadyExists = pokemonDetails.some(p => p.name === fullData.name);
+      const alreadyExists = pokemonDetails.some(
+        (p) => p.name === fullData.name
+      );
       if (!alreadyExists) {
         pokemonDetails.push(fullData);
       }
-
-      
     }
 
     offset += limit;
@@ -154,12 +152,11 @@ async function loadMorePokemon() {
 
 function renderPokeCards(startIndex = 0) {
   const grid = document.getElementById("cards-grid");
-   renderPokemon = [...pokemonDetails]
-    .filter((v, i, a) => a.findIndex(p => p.name === v.name) === i) 
+  renderPokemon = [...pokemonDetails]
+    .filter((v, i, a) => a.findIndex((p) => p.name === v.name) === i)
     .sort((a, b) => a.id - b.id);
 
-    console.log(renderPokemon);
-    
+  console.log(renderPokemon);
 
   for (let index = startIndex; index < renderPokemon.length; index++) {
     const pokemonData = renderPokemon[index];
@@ -212,4 +209,35 @@ function showPokemonDetails(pokemonData) {
   loader.onload = () => {
     detailImg.src = realImg;
   };
+
+  detailContainer.addEventListener("click", () => {
+    showOverlay(pokemonData);
+  });
+}
+
+function showOverlay(pokemonData) {
+  const existingOverlay = document.querySelector(".pokemon-overlay");
+if (existingOverlay) {
+  existingOverlay.remove();
+}
+
+  const overlay = document.createElement("div");
+  overlay.classList.add("pokemon-overlay");
+
+  const modal = document.createElement("div");
+  modal.classList.add("pokemon-modal");
+
+  modal.innerHTML = getOverlayHTML(pokemonData)
+
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
+
+  document.body.classList.add("overlay-open");
+
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) {
+      overlay.remove();
+      document.body.classList.remove("overlay-open");
+    }
+  });
 }
