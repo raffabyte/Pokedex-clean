@@ -4,6 +4,8 @@ let pokemonDetails = [];
 let renderPokemon = [];
 let pokemonAllDetails = [];
 
+let currentIndex = 0;
+
 let searchInput;
 let ghost;
 let currentSuggestion = "";
@@ -167,6 +169,7 @@ function renderPokeCards(startIndex = 0) {
     const card = div.firstElementChild;
 
     card.addEventListener("click", () => {
+      currentIndex = index;
       showPokemonDetails(pokemonData);
     });
 
@@ -227,10 +230,49 @@ if (existingOverlay) {
   const modal = document.createElement("div");
   modal.classList.add("pokemon-modal");
 
+  // hier neu
+
+
+  const change = document.createElement("div");
+  change.classList.add("pokemon-change");
+
+  const previous = document.createElement("div");
+  previous.classList.add("previous-pokemon");
+
+  const next = document.createElement("div");
+  next.classList.add("next-pokemon");
+
+  previous.innerHTML = getPreviousHTML()
+
+  next.innerHTML = getNextHTML()
+
+
+  // hier neu
+
   modal.innerHTML = getOverlayHTML(pokemonData)
 
   overlay.appendChild(modal);
+  overlay.appendChild(change);
+  change.appendChild(previous)
+  change.appendChild(next)
   document.body.appendChild(overlay);
+
+
+// hier neu
+
+previous.addEventListener("click", () => {
+  currentIndex = Math.max(0, currentIndex - 1);
+  showOverlay(pokemonDetails[currentIndex]);
+});
+
+next.addEventListener("click", () => {
+  currentIndex = Math.min(pokemonDetails.length - 1, currentIndex + 1);
+  showOverlay(pokemonDetails[currentIndex]);
+});
+
+
+// hier neu
+
 
   document.body.classList.add("overlay-open");
 
@@ -240,4 +282,40 @@ if (existingOverlay) {
       document.body.classList.remove("overlay-open");
     }
   });
+
+  const tabs = document.createElement("div");
+tabs.classList.add("modal-tabs");
+tabs.innerHTML = getOverlayHTMLTaps()
+modal.appendChild(tabs);
+
+  const contentContainer = document.createElement("div");
+contentContainer.id = "modal-content";
+modal.appendChild(contentContainer);
+
+tabs.addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON") {
+    const tab = e.target.getAttribute("data-tab");
+
+    // 🟢 Aktive Tabs visuell markieren
+    Array.from(tabs.querySelectorAll("button")).forEach(btn =>
+      btn.classList.remove("active")
+    );
+    e.target.classList.add("active");
+
+    // ⏩ Inhalte neu laden
+    renderTab(tab, pokemonData, contentContainer);
+  }
+});
+}
+
+function renderTab(tab, pokemonData, container) {
+  if (tab === "general") {
+    container.innerHTML = getOverlayHTMLGerneral(pokemonData);
+  } else if (tab === "stats") {
+    container.innerHTML = getOverlayHTMLStats(pokemonData);
+  } else if (tab === "abilities") {
+    container.innerHTML = getOverlayHTMLAbilities(pokemonData)
+  } else if (tab === "moves") {
+    container.innerHTML = getOverlayHTMLMoves(pokemonData)
+  }
 }
