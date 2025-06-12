@@ -236,22 +236,74 @@ function showPokemonDetails(pokemonData) {
   const detailImg = detailContainer.querySelector(".detail-img");
   const realImg = pokemonData.sprites.other["official-artwork"].front_default;
 
+  // Bild nachladen
   const loader = new Image();
   loader.src = realImg;
   loader.onload = () => {
     detailImg.src = realImg;
   };
 
-  detailContainer.addEventListener("click", () => {
-    showOverlay(pokemonData);
+  // 🧬 Evolution: Platzhalter einfügen
+  const evoWrapper = document.createElement("div");
+  evoWrapper.innerHTML = "<h3>Evolution</h3><p>Lädt...</p>";
+  detailContainer.appendChild(evoWrapper);
+
+  // Evolutionsdaten laden und anzeigen
+  loadEvolutionChain(pokemonData).then(async (names) => {
+    const htmlParts = [];
+
+    for (const name of names) {
+      try {
+        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+        const evoData = await res.json();
+        const img = evoData.sprites.front_default;
+        const label = evoData.name.toUpperCase();
+
+        htmlParts.push(`
+          <div style="display:inline-block; text-align:center; margin: 0.5rem;">
+            <img src="${img}" alt="${label}" width="72" height="72"><br>
+            <span style="font-size: 0.5rem;">${label}</span>
+          </div>
+        `);
+      } catch {
+        htmlParts.push(`<p>${name}</p>`);
+      }
+    }
+
+    evoWrapper.innerHTML = "<h3>Evolution</h3>" + htmlParts.join("→");
   });
+
+  async function loadEvolutionChain(pokemonData) {
+  const resSpecies = await fetch(pokemonData.species.url);
+  const speciesData = await resSpecies.json();
+
+  const resEvolution = await fetch(speciesData.evolution_chain.url);
+  const evolutionData = await resEvolution.json();
+
+  const chain = evolutionData.chain;
+  const evolutionNames = [];
+
+  function extractEvolutions(evoNode) {
+    evolutionNames.push(evoNode.species.name);
+    evoNode.evolves_to.forEach(extractEvolutions);
+  }
+
+  extractEvolutions(chain);
+
+  return evolutionNames;
+}
+
+  // Klick öffnet Overlay (Desktop)
+  detailContainer.onclick = () => {
+    showOverlay(pokemonData);
+  };
 }
 
 function showOverlay(pokemonData) {
   const existingOverlay = document.querySelector(".pokemon-overlay");
-if (existingOverlay) {
-  existingOverlay.remove();
-}
+  if (existingOverlay) {
+    existingOverlay.remove();
+  }
 
   const overlay = document.createElement("div");
   overlay.classList.add("pokemon-overlay");
@@ -259,63 +311,71 @@ if (existingOverlay) {
   const modal = document.createElement("div");
   modal.classList.add("pokemon-modal");
 
-  // hier neu
-
-
+  // Navigation
   const change = document.createElement("div");
   change.classList.add("pokemon-change");
 
   const previous = document.createElement("div");
   previous.classList.add("previous-pokemon");
+  previous.innerHTML = getPreviousHTML();
 
   const next = document.createElement("div");
   next.classList.add("next-pokemon");
+  next.innerHTML = getNextHTML();
 
   const close = document.createElement("button");
-close.classList.add("close-button");
-close.innerHTML = getCloseHTML(); // liefert NUR das Symbol, kein Button-Element
+  close.classList.add("close-button");
+  close.innerHTML = getCloseHTML();
 
-  close.innerHTML = getCloseHTML()
+  // Inhalt: Kopfbereich
+  modal.innerHTML = getOverlayHTML(pokemonData);
 
-  previous.innerHTML = getPreviousHTML()
+  // Tabs & Inhalt
+  const tabs = document.createElement("div");
+  tabs.classList.add("modal-tabs");
+  tabs.innerHTML = getOverlayHTMLTaps();
+  modal.appendChild(tabs);
 
-  next.innerHTML = getNextHTML()
+  const contentContainer = document.createElement("div");
+  contentContainer.id = "modal-content";
+  modal.appendChild(contentContainer);
 
+  // 🟢 Direkt beim Öffnen den 'Allgemein'-Tab laden
+  renderTab("general", pokemonData, contentContainer);
 
-  // hier neu
+  // Bild Lazy Load
+  const overlayImage = modal.querySelector(".pokemon-image");
+  const realSrc = overlayImage.getAttribute("data-src");
+  const preload = new Image();
+  preload.src = realSrc;
+  preload.onload = () => {
+    overlayImage.src = realSrc;
+  };
 
-  modal.innerHTML = getOverlayHTML(pokemonData)
-
+  // Buttons & Navigation
+  modal.appendChild(close);
   overlay.appendChild(modal);
   overlay.appendChild(change);
-  modal.appendChild(close)
-  change.appendChild(previous)
-  change.appendChild(next)
+  change.appendChild(previous);
+  change.appendChild(next);
   document.body.appendChild(overlay);
 
-
-// hier neu
-
-previous.addEventListener("click", () => {
-  currentIndex = Math.max(0, currentIndex - 1);
-  showOverlay(pokemonDetails[currentIndex]);
-});
-
-next.addEventListener("click", () => {
-  currentIndex = Math.min(pokemonDetails.length - 1, currentIndex + 1);
-  showOverlay(pokemonDetails[currentIndex]);
-});
-
-close.addEventListener("click", () => {
-  overlay.remove(); // entfernt das Overlay aus dem DOM
-  document.body.classList.remove("overlay-open"); // falls du CSS-Änderungen an <body> gemacht hast
-});
-
-
-// hier neu
-
-
   document.body.classList.add("overlay-open");
+
+  previous.addEventListener("click", () => {
+    currentIndex = Math.max(0, currentIndex - 1);
+    showOverlay(pokemonDetails[currentIndex]);
+  });
+
+  next.addEventListener("click", () => {
+    currentIndex = Math.min(pokemonDetails.length - 1, currentIndex + 1);
+    showOverlay(pokemonDetails[currentIndex]);
+  });
+
+  close.addEventListener("click", () => {
+    overlay.remove();
+    document.body.classList.remove("overlay-open");
+  });
 
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
@@ -324,30 +384,21 @@ close.addEventListener("click", () => {
     }
   });
 
-  const tabs = document.createElement("div");
-tabs.classList.add("modal-tabs");
-tabs.innerHTML = getOverlayHTMLTaps()
-modal.appendChild(tabs);
+  // Tabs click handler
+  tabs.addEventListener("click", (e) => {
+    if (e.target.tagName === "BUTTON") {
+      const tab = e.target.getAttribute("data-tab");
 
-  const contentContainer = document.createElement("div");
-contentContainer.id = "modal-content";
-modal.appendChild(contentContainer);
+      tabs.querySelectorAll("button").forEach(btn =>
+        btn.classList.remove("active")
+      );
+      e.target.classList.add("active");
 
-tabs.addEventListener("click", (e) => {
-  if (e.target.tagName === "BUTTON") {
-    const tab = e.target.getAttribute("data-tab");
-
-    // 🟢 Aktive Tabs visuell markieren
-    Array.from(tabs.querySelectorAll("button")).forEach(btn =>
-      btn.classList.remove("active")
-    );
-    e.target.classList.add("active");
-
-    // ⏩ Inhalte neu laden
-    renderTab(tab, pokemonData, contentContainer);
-  }
-});
+      renderTab(tab, pokemonData, contentContainer);
+    }
+  });
 }
+
 
 function renderTab(tab, pokemonData, container) {
   if (tab === "general") {

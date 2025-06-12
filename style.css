@@ -118,6 +118,9 @@ body.overlay-open {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   text-align: center;
 }
+.details-container::-webkit-scrollbar {
+  display: none;
+}
 .details-container:hover {
   transform: scale(1.02);
   box-shadow: 6px 6px 0 #666;
@@ -430,6 +433,7 @@ body.overlay-open {
 
 /* MOBILE FULLSCREEN LAYOUT */
 @media (max-width: 767px) {
+  
 
   .autocomplete-wrapper {
   position: absolute;
@@ -519,7 +523,7 @@ body.overlay-open {
   .pokemon-change {
     flex-direction: row;
     justify-content: space-between;
-    width: 100%;
+    max-width: 100%;
     gap: 1rem;
     gap: 0;
   }

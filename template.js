@@ -22,10 +22,14 @@ function getDetailContainerHTML(pokemonData) {
   const realImg = pokemonData.sprites.other["official-artwork"].front_default;
   const placeholder = "img/pokeball.png";
   const idFormatted = formatId(pokemonData.id);
-  
+
   const typesHTML = pokemonData.types
-    .map((t) => `<span class="type-badge ${t.type.name}">${t.type.name}</span>`)
+    .map((t) => `<span class="type-badge ${t.type.name}">${t.type.name.toUpperCase()}</span>`)
     .join(" ");
+
+  const abilitiesHTML = pokemonData.abilities
+    .map((a) => `${a.ability.name}${a.is_hidden ? " (hidden)" : ""}`)
+    .join(", ");
 
   const statsHTML = pokemonData.stats
     .map(
@@ -33,9 +37,7 @@ function getDetailContainerHTML(pokemonData) {
       <div class="stat-row">
         <span class="stat-label">${s.stat.name.toUpperCase()}</span>
         <div class="stat-bar">
-          <div class="stat-fill" style="width: ${
-            Math.min(s.base_stat, 150) / 1.5
-          }%"></div>
+          <div class="stat-fill" style="width: ${Math.min(s.base_stat, 150) / 1.5}%"></div>
         </div>
         <span class="stat-value">${s.base_stat}</span>
       </div>
@@ -48,6 +50,11 @@ function getDetailContainerHTML(pokemonData) {
     <p class="poke-id">${idFormatted}</p>
     <img class="detail-img" src="${placeholder}" data-src="${realImg}" width="200">
     <div>${typesHTML}</div>
+    <hr>
+    <p><strong>Size:</strong> ${(pokemonData.height / 10).toFixed(1)} m</p>
+    <p><strong>Weight:</strong> ${(pokemonData.weight / 10).toFixed(1)} kg</p>
+    <p><strong>Abilities:</strong> ${abilitiesHTML}</p>
+    <p><strong>Base XP:</strong> ${pokemonData.base_experience}</p>
     <hr>
     <h3>Stats</h3>
     ${statsHTML}
@@ -82,7 +89,7 @@ function getOverlayHTML(pokemonData) {
     return `
     <h2 class="pokemon-name">${name}</h2>
     <p class="poke-id pokemon-id">${id}</p>
-    <img class="pokemon-image" src="${imgSrc}" alt="${name}">
+    <img class="pokemon-image" src="img/pokeball.png" data-src="${imgSrc}" alt="${name}">
     <p>Typ: ${types}</p>
   `;
 }
@@ -95,13 +102,14 @@ function getOverlayHTMLTaps() {
 `;
 }
 function getOverlayHTMLGerneral(pokemonData) {
-  return`
-      <p>Größe: ${(pokemonData.height / 10).toFixed(1)} m</p>
-      <p>Gewicht: ${(pokemonData.weight / 10).toFixed(1)} kg</p>
-    `
+  return `
+    <p><strong>Size:</strong> ${(pokemonData.height / 10).toFixed(1)} m</p>
+    <p><strong>Weight:</strong> ${(pokemonData.weight / 10).toFixed(1)} kg</p>
+  `;
 }
 function getOverlayHTMLStats(pokemonData) {
-  const stats = pokemonData.stats.map(stat => `
+  const stats = pokemonData.stats
+    .map(stat => `
       <div class="stat-row">
         <div class="stat-label">${stat.stat.name}</div>
         <div class="stat-bar">
@@ -110,15 +118,20 @@ function getOverlayHTMLStats(pokemonData) {
         <div class="stat-value">${stat.base_stat}</div>
       </div>
     `).join("");
-  return stats
+  return stats;
 }
 function getOverlayHTMLAbilities(pokemonData) {
-  return pokemonData.abilities.map(a => `
-      <p>${a.ability.name} ${a.is_hidden ? "(versteckt)" : ""}</p>
+  return pokemonData.abilities
+    .map(a => `
+      <p>${a.ability.name}${a.is_hidden ? " (hidden)" : ""}</p>
     `).join("");
 }
 function getOverlayHTMLMoves(pokemonData) {
-
+  const moves = pokemonData.moves
+    .slice(0, 10)
+    .map(m => m.move.name)
+    .join(", ");
+  return `<p>${moves}</p>`;
 }
 function getPreviousHTML() {
   return`
