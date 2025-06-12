@@ -10,6 +10,8 @@ let searchInput;
 let ghost;
 let currentSuggestion = "";
 
+
+
 window.addEventListener("DOMContentLoaded", init);
 
 async function init() {
@@ -26,6 +28,17 @@ async function init() {
   searchInput.addEventListener("keydown", handleAutocompleteKeydown);
   searchInput.addEventListener("input", runSearch);
   // document.getElementById("details-container").addEventListener("click", showOverlay);
+
+  const searchToggle = document.querySelector('.search-toggle');
+  const autocompleteWrapper = document.querySelector('.autocomplete-wrapper');
+
+  searchToggle.addEventListener('click', () => {
+    if (autocompleteWrapper.style.display === 'flex') {
+      autocompleteWrapper.style.display = 'none';
+    } else {
+      autocompleteWrapper.style.display = 'flex';
+    }
+  });
 
   loader.style.display = "none";
 }
@@ -169,8 +182,17 @@ function renderPokeCards(startIndex = 0) {
     const card = div.firstElementChild;
 
     card.addEventListener("click", () => {
+      const isMobile = window.innerWidth <= 768;
+      
       currentIndex = index;
-      showPokemonDetails(pokemonData);
+      
+      if (isMobile) {
+    showOverlay(pokemonData) // Für Handy
+  } else {
+    showPokemonDetails(pokemonData); // Für Desktop
+  }
+
+      
     });
 
     grid.appendChild(card);
@@ -188,8 +210,15 @@ function renderFilteredCards(filteredList) {
     const card = div.firstElementChild;
 
     card.addEventListener("click", () => {
-      showPokemonDetails(pokemon);
-    });
+  const isMobile = window.innerWidth <= 768;
+  currentIndex = pokemonDetails.findIndex(p => p.name === pokemon.name);
+  
+  if (isMobile) {
+    showOverlay(pokemon);
+  } else {
+    showPokemonDetails(pokemon);
+  }
+});
 
     grid.appendChild(card);
   }
@@ -242,6 +271,12 @@ if (existingOverlay) {
   const next = document.createElement("div");
   next.classList.add("next-pokemon");
 
+  const close = document.createElement("button");
+close.classList.add("close-button");
+close.innerHTML = getCloseHTML(); // liefert NUR das Symbol, kein Button-Element
+
+  close.innerHTML = getCloseHTML()
+
   previous.innerHTML = getPreviousHTML()
 
   next.innerHTML = getNextHTML()
@@ -253,6 +288,7 @@ if (existingOverlay) {
 
   overlay.appendChild(modal);
   overlay.appendChild(change);
+  modal.appendChild(close)
   change.appendChild(previous)
   change.appendChild(next)
   document.body.appendChild(overlay);
@@ -268,6 +304,11 @@ previous.addEventListener("click", () => {
 next.addEventListener("click", () => {
   currentIndex = Math.min(pokemonDetails.length - 1, currentIndex + 1);
   showOverlay(pokemonDetails[currentIndex]);
+});
+
+close.addEventListener("click", () => {
+  overlay.remove(); // entfernt das Overlay aus dem DOM
+  document.body.classList.remove("overlay-open"); // falls du CSS-Änderungen an <body> gemacht hast
 });
 
 

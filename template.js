@@ -130,3 +130,6 @@ function getNextHTML() {
       <h3>next</h3>
     `
 }
+function getCloseHTML() {
+  return `✖`;
+}
