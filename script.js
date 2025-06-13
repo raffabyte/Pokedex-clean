@@ -1,8 +1,7 @@
 let offset = 0;
 const limit = 30;
+
 let pokemonDetails = [];
-let renderPokemon = [];
-let pokemonAllDetails = [];
 
 let currentIndex = 0;
 
@@ -10,37 +9,41 @@ let searchInput;
 let ghost;
 let currentSuggestion = "";
 
-
-
 window.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   const loader = document.getElementById("grid-loader");
+
   loader.style.display = "flex";
 
   await loadMorePokemon();
-  renderPokeCards();
 
+  runSearchIfInput();
+  toggleSearchMobile();
+
+  loader.style.display = "none";
+}
+
+function runSearchIfInput() {
   searchInput = document.getElementById("search-input");
   ghost = document.getElementById("autocomplete-ghost");
   currentSuggestion = "";
 
   searchInput.addEventListener("keydown", handleAutocompleteKeydown);
   searchInput.addEventListener("input", runSearch);
-  // document.getElementById("details-container").addEventListener("click", showOverlay);
+}
 
-  const searchToggle = document.querySelector('.search-toggle');
-  const autocompleteWrapper = document.querySelector('.autocomplete-wrapper');
+function toggleSearchMobile() {
+  const searchToggle = document.querySelector(".search-toggle");
+  const autocompleteWrapper = document.querySelector(".autocomplete-wrapper");
 
-  searchToggle.addEventListener('click', () => {
-    if (autocompleteWrapper.style.display === 'flex') {
-      autocompleteWrapper.style.display = 'none';
+  searchToggle.addEventListener("click", () => {
+    if (autocompleteWrapper.style.display === "flex") {
+      autocompleteWrapper.style.display = "none";
     } else {
-      autocompleteWrapper.style.display = 'flex';
+      autocompleteWrapper.style.display = "flex";
     }
   });
-
-  loader.style.display = "none";
 }
 
 async function runSearch() {
@@ -105,17 +108,6 @@ async function searchExactPokemon(search) {
     if (!res.ok) throw new Error("not found");
 
     const data = await res.json();
-
-    const alreadyExists = pokemonDetails.some((p) => p.name === data.name);
-    if (!alreadyExists) {
-      pokemonAllDetails = [...pokemonDetails]
-        .filter((v, i, a) => a.findIndex((p) => p.name === v.name) === i)
-        .sort((a, b) => a.id - b.id);
-
-      pokemonAllDetails.push(data);
-      pokemonAllDetails.sort((a, b) => a.id - b.id);
-    }
-
     renderFilteredCards([data]);
   } catch {
     const grid = document.getElementById("cards-grid");
@@ -123,18 +115,18 @@ async function searchExactPokemon(search) {
   }
 }
 
-function chageArray() {}
-
 async function loadMorePokemon() {
-  const loader = document.getElementById("grid-loader");
-  const button = document.getElementById("load-more-button");
-
-  loader.style.display = "flex";
-  button.disabled = true;
-  button.innerText = "Lädt...";
+  startLoadingSpinner();
 
   const startIndex = pokemonDetails.length;
 
+  await fetchMorePokemon();
+
+  renderPokeCards(startIndex);
+  endLoadingSpinner();
+}
+
+async function fetchMorePokemon() {
   try {
     const response = await fetch(
       `https://pokeapi.co/api/v2/pokemon?offset=${offset}&limit=${limit}`
@@ -145,20 +137,27 @@ async function loadMorePokemon() {
       const res = await fetch(entry.url);
       const fullData = await res.json();
 
-      const alreadyExists = pokemonDetails.some(
-        (p) => p.name === fullData.name
-      );
-      if (!alreadyExists) {
-        pokemonDetails.push(fullData);
-      }
+      pokemonDetails.push(fullData);
     }
-
-    offset += limit;
-    pokemonDetails.sort((a, b) => a.id - b.id);
-    renderPokeCards(startIndex);
   } catch (err) {
     console.error("Fehler beim Nachladen:", err);
   }
+
+  offset += limit;
+}
+
+function startLoadingSpinner() {
+  const loader = document.getElementById("grid-loader");
+  const button = document.getElementById("load-more-button");
+
+  loader.style.display = "flex";
+  button.disabled = true;
+  button.innerText = "Lädt...";
+}
+
+function endLoadingSpinner() {
+  const loader = document.getElementById("grid-loader");
+  const button = document.getElementById("load-more-button");
 
   loader.style.display = "none";
   button.disabled = false;
@@ -167,35 +166,32 @@ async function loadMorePokemon() {
 
 function renderPokeCards(startIndex = 0) {
   const grid = document.getElementById("cards-grid");
-  renderPokemon = [...pokemonDetails]
-    .filter((v, i, a) => a.findIndex((p) => p.name === v.name) === i)
-    .sort((a, b) => a.id - b.id);
 
-  console.log(renderPokemon);
-
-  for (let index = startIndex; index < renderPokemon.length; index++) {
-    const pokemonData = renderPokemon[index];
-    const pokemonHtml = getPokeCardsHTML(pokemonData);
-
-    const div = document.createElement("div");
-    div.innerHTML = pokemonHtml;
-    const card = div.firstElementChild;
-
-    card.addEventListener("click", () => {
-      const isMobile = window.innerWidth <= 768;
-      
-      currentIndex = index;
-      
-      if (isMobile) {
-    showOverlay(pokemonData) // Für Handy
-  } else {
-    showPokemonDetails(pokemonData); // Für Desktop
-  }
-
-      
-    });
-
+  for (let index = startIndex; index < pokemonDetails.length; index++) {
+    const pokemonData = pokemonDetails[index];
+    const card = createPokemonCard(pokemonData, index);
     grid.appendChild(card);
+  }
+}
+
+function createPokemonCard(pokemonData, index) {
+  const div = document.createElement("div");
+  div.innerHTML = getPokeCardsHTML(pokemonData);
+  const card = div.firstElementChild;
+
+  card.addEventListener("click", () => handleCardClick(pokemonData, index));
+
+  return card;
+}
+
+function handleCardClick(pokemonData, index) {
+  const isMobile = window.innerWidth <= 768;
+  currentIndex = index;
+
+  if (isMobile) {
+    showOverlay(pokemonData);
+  } else {
+    showPokemonDetails(pokemonData);
   }
 }
 
@@ -204,23 +200,31 @@ function renderFilteredCards(filteredList) {
   grid.innerHTML = "";
 
   for (const pokemon of filteredList) {
-    const html = getPokeCardsHTML(pokemon);
-    const div = document.createElement("div");
-    div.innerHTML = html;
-    const card = div.firstElementChild;
-
-    card.addEventListener("click", () => {
-  const isMobile = window.innerWidth <= 768;
-  currentIndex = pokemonDetails.findIndex(p => p.name === pokemon.name);
-  
-  if (isMobile) {
-    showOverlay(pokemon);
-  } else {
-    showPokemonDetails(pokemon);
-  }
-});
-
+    const card = createPokemonCard(pokemon);
     grid.appendChild(card);
+  }
+}
+
+function createPokemonCard(pokemon) {
+  const div = document.createElement("div");
+  div.innerHTML = getPokeCardsHTML(pokemon);
+  const card = div.firstElementChild;
+
+  card.addEventListener("click", () => {
+    currentIndex = pokemonDetails.findIndex((p) => p.name === pokemon.name);
+    handleCardClick(pokemon);
+  });
+
+  return card;
+}
+
+function handleCardClick(pokemonData) {
+  const isMobile = window.innerWidth <= 768;
+
+  if (isMobile) {
+    showOverlay(pokemonData);
+  } else {
+    showPokemonDetails(pokemonData);
   }
 }
 
@@ -228,141 +232,144 @@ function formatId(id) {
   return "#" + id.toString().padStart(4, "0");
 }
 
-function showPokemonDetails(pokemonData) {
+async function showPokemonDetails(pokemonData) {
   const detailContainer = document.getElementById("details-container");
 
-  detailContainer.innerHTML = getDetailContainerHTML(pokemonData);
+  const evolutionNames = await loadEvolutionChain(pokemonData);
+  const evolutionData = await fetchEvolutionData(evolutionNames);
+
+  detailContainer.innerHTML = getDetailContainerHTML(
+    pokemonData,
+    evolutionData
+  );
 
   const detailImg = detailContainer.querySelector(".detail-img");
   const realImg = pokemonData.sprites.other["official-artwork"].front_default;
-
-  // Bild nachladen
   const loader = new Image();
   loader.src = realImg;
   loader.onload = () => {
     detailImg.src = realImg;
   };
 
-  // 🧬 Evolution: Platzhalter einfügen
-  const evoWrapper = document.createElement("div");
-  evoWrapper.innerHTML = "<h3>Evolution</h3><p>Lädt...</p>";
-  detailContainer.appendChild(evoWrapper);
-
-  // Evolutionsdaten laden und anzeigen
-  loadEvolutionChain(pokemonData).then(async (names) => {
-    const htmlParts = [];
-
-    for (const name of names) {
-      try {
-        const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
-        const evoData = await res.json();
-        const img = evoData.sprites.front_default;
-        const label = evoData.name.toUpperCase();
-
-        htmlParts.push(`
-          <div style="display:inline-block; text-align:center; margin: 0.5rem;">
-            <img src="${img}" alt="${label}" width="72" height="72"><br>
-            <span style="font-size: 0.5rem;">${label}</span>
-          </div>
-        `);
-      } catch {
-        htmlParts.push(`<p>${name}</p>`);
-      }
-    }
-
-    evoWrapper.innerHTML = "<h3>Evolution</h3>" + htmlParts.join("→");
-  });
-
-  async function loadEvolutionChain(pokemonData) {
-  const resSpecies = await fetch(pokemonData.species.url);
-  const speciesData = await resSpecies.json();
-
-  const resEvolution = await fetch(speciesData.evolution_chain.url);
-  const evolutionData = await resEvolution.json();
-
-  const chain = evolutionData.chain;
-  const evolutionNames = [];
-
-  function extractEvolutions(evoNode) {
-    evolutionNames.push(evoNode.species.name);
-    evoNode.evolves_to.forEach(extractEvolutions);
-  }
-
-  extractEvolutions(chain);
-
-  return evolutionNames;
-}
-
-  // Klick öffnet Overlay (Desktop)
   detailContainer.onclick = () => {
     showOverlay(pokemonData);
   };
 }
+async function loadEvolutionChain(pokemonData) {
+  const resSpecies = await fetch(pokemonData.species.url);
+  const speciesData = await resSpecies.json();
+  const resEvolution = await fetch(speciesData.evolution_chain.url);
+  const evolutionData = await resEvolution.json();
 
-function showOverlay(pokemonData) {
-  const existingOverlay = document.querySelector(".pokemon-overlay");
-  if (existingOverlay) {
-    existingOverlay.remove();
+  const names = [];
+  function extractEvolutions(evo) {
+    names.push(evo.species.name);
+    evo.evolves_to.forEach(extractEvolutions);
   }
 
+  extractEvolutions(evolutionData.chain);
+  return names;
+}
+
+async function fetchEvolutionData(names) {
+  const evoList = [];
+
+  for (const name of names) {
+    try {
+      const res = await fetch(`https://pokeapi.co/api/v2/pokemon/${name}`);
+      const evo = await res.json();
+      evoList.push({
+        name: evo.name,
+        img: evo.sprites.front_default,
+      });
+    } catch {
+      evoList.push({ name, img: null });
+    }
+  }
+
+  return evoList;
+}
+
+function showOverlay(pokemonData) {
+  removeExistingOverlay();
+
+  const overlay = createOverlayContainer();
+  const modal = createModal(pokemonData);
+  const navigation = createOverlayNavigation();
+  const closeBtn = createCloseButton();
+
+  overlay.appendChild(modal);
+  overlay.appendChild(navigation);
+  modal.appendChild(closeBtn);
+
+  document.body.appendChild(overlay);
+  document.body.classList.add("overlay-open");
+
+  attachNavigationEvents(navigation, pokemonData);
+  attachCloseEvents(overlay, closeBtn);
+
+  preloadOverlayImage(modal);
+  attachTabHandlers(modal, pokemonData);
+}
+
+function removeExistingOverlay() {
+  const existing = document.querySelector(".pokemon-overlay");
+  if (existing) existing.remove();
+}
+
+function createOverlayContainer() {
   const overlay = document.createElement("div");
   overlay.classList.add("pokemon-overlay");
+  return overlay;
+}
 
+function createModal(pokemonData) {
   const modal = document.createElement("div");
   modal.classList.add("pokemon-modal");
-
-  // Navigation
-  const change = document.createElement("div");
-  change.classList.add("pokemon-change");
-
-  const previous = document.createElement("div");
-  previous.classList.add("previous-pokemon");
-  previous.innerHTML = getPreviousHTML();
-
-  const next = document.createElement("div");
-  next.classList.add("next-pokemon");
-  next.innerHTML = getNextHTML();
-
-  const close = document.createElement("button");
-  close.classList.add("close-button");
-  close.innerHTML = getCloseHTML();
-
-  // Inhalt: Kopfbereich
   modal.innerHTML = getOverlayHTML(pokemonData);
 
-  // Tabs & Inhalt
   const tabs = document.createElement("div");
   tabs.classList.add("modal-tabs");
   tabs.innerHTML = getOverlayHTMLTaps();
   modal.appendChild(tabs);
 
-  const contentContainer = document.createElement("div");
-  contentContainer.id = "modal-content";
-  modal.appendChild(contentContainer);
+  const content = document.createElement("div");
+  content.id = "modal-content";
+  modal.appendChild(content);
 
-  // 🟢 Direkt beim Öffnen den 'Allgemein'-Tab laden
-  renderTab("general", pokemonData, contentContainer);
+  renderTab("general", pokemonData, content);
+  return modal;
+}
 
-  // Bild Lazy Load
-  const overlayImage = modal.querySelector(".pokemon-image");
-  const realSrc = overlayImage.getAttribute("data-src");
-  const preload = new Image();
-  preload.src = realSrc;
-  preload.onload = () => {
-    overlayImage.src = realSrc;
-  };
+function createOverlayNavigation() {
+  const wrapper = document.createElement("div");
+  wrapper.classList.add("pokemon-change");
 
-  // Buttons & Navigation
-  modal.appendChild(close);
-  overlay.appendChild(modal);
-  overlay.appendChild(change);
-  change.appendChild(previous);
-  change.appendChild(next);
-  document.body.appendChild(overlay);
+  const prev = document.createElement("div");
+  prev.classList.add("previous-pokemon");
+  prev.innerHTML = getPreviousHTML();
 
-  document.body.classList.add("overlay-open");
+  const next = document.createElement("div");
+  next.classList.add("next-pokemon");
+  next.innerHTML = getNextHTML();
 
-  previous.addEventListener("click", () => {
+  wrapper.appendChild(prev);
+  wrapper.appendChild(next);
+
+  return wrapper;
+}
+
+function createCloseButton() {
+  const btn = document.createElement("button");
+  btn.classList.add("close-button");
+  btn.innerHTML = getCloseHTML();
+  return btn;
+}
+
+function attachNavigationEvents(navWrapper, currentData) {
+  const [prev, next] = navWrapper.children;
+
+  prev.addEventListener("click", () => {
     currentIndex = Math.max(0, currentIndex - 1);
     showOverlay(pokemonDetails[currentIndex]);
   });
@@ -371,8 +378,10 @@ function showOverlay(pokemonData) {
     currentIndex = Math.min(pokemonDetails.length - 1, currentIndex + 1);
     showOverlay(pokemonDetails[currentIndex]);
   });
+}
 
-  close.addEventListener("click", () => {
+function attachCloseEvents(overlay, closeBtn) {
+  closeBtn.addEventListener("click", () => {
     overlay.remove();
     document.body.classList.remove("overlay-open");
   });
@@ -383,22 +392,34 @@ function showOverlay(pokemonData) {
       document.body.classList.remove("overlay-open");
     }
   });
+}
 
-  // Tabs click handler
+function preloadOverlayImage(modal) {
+  const image = modal.querySelector(".pokemon-image");
+  const realSrc = image.getAttribute("data-src");
+  const loader = new Image();
+  loader.src = realSrc;
+  loader.onload = () => {
+    image.src = realSrc;
+  };
+}
+
+function attachTabHandlers(modal, pokemonData) {
+  const tabs = modal.querySelector(".modal-tabs");
+  const content = modal.querySelector("#modal-content");
+
   tabs.addEventListener("click", (e) => {
     if (e.target.tagName === "BUTTON") {
-      const tab = e.target.getAttribute("data-tab");
-
-      tabs.querySelectorAll("button").forEach(btn =>
-        btn.classList.remove("active")
-      );
+      tabs
+        .querySelectorAll("button")
+        .forEach((btn) => btn.classList.remove("active"));
       e.target.classList.add("active");
 
-      renderTab(tab, pokemonData, contentContainer);
+      const tab = e.target.getAttribute("data-tab");
+      renderTab(tab, pokemonData, content);
     }
   });
 }
-
 
 function renderTab(tab, pokemonData, container) {
   if (tab === "general") {
@@ -406,8 +427,8 @@ function renderTab(tab, pokemonData, container) {
   } else if (tab === "stats") {
     container.innerHTML = getOverlayHTMLStats(pokemonData);
   } else if (tab === "abilities") {
-    container.innerHTML = getOverlayHTMLAbilities(pokemonData)
+    container.innerHTML = getOverlayHTMLAbilities(pokemonData);
   } else if (tab === "moves") {
-    container.innerHTML = getOverlayHTMLMoves(pokemonData)
+    container.innerHTML = getOverlayHTMLMoves(pokemonData);
   }
 }
